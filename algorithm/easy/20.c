@@ -10,6 +10,17 @@ struct par_node {
 	struct par_node *tail;
 };
 
+static void insert_tail_node(struct par_node *head, struct par_node *node) {
+	if (head->next != NULL) {
+		node->prev = head->tail;
+		head->tail->next = node;
+	} else {
+		node->prev = head;
+		head->next = node;
+	}
+	head->tail = node;
+}
+
 static void free_tail_node(struct par_node *head) {
 	struct par_node *node;
 
@@ -17,6 +28,18 @@ static void free_tail_node(struct par_node *head) {
 	head->tail = node->prev;
 	head->tail->next = NULL;
 	free(node);
+}
+
+char revert_par(char input)
+{
+	if (input == '}')
+		return '{';
+	else if (input == ']')
+		return '[';
+	else if (input == ')')
+		return '(';
+	else
+		return '\0';
 }
 
 bool isValid(char* s) {
@@ -34,27 +57,16 @@ bool isValid(char* s) {
 			node = malloc(sizeof(struct par_node));
 			node->par_content = &s[i];
 			node->next = NULL;
-			if (head->next != NULL) {
-				node->prev = head->tail;
-				head->tail->next = node;
-			} else {
-				node->prev = head;
-				head->next = node;
-			}
-			head->tail = node;
+			insert_tail_node(head, node);
 		} else {
 			if (head->next == NULL) {
 				ret = false;
 				goto free_nodes;
 			}
 
-			if ((s[i] == '}') && (*(head->tail->par_content) == '{'))
+			if (revert_par(s[i]) == *(head->tail->par_content)) {
 				free_tail_node(head);
-			else if ((s[i] == ']') && (*(head->tail->par_content) == '['))
-				free_tail_node(head);
-			else if ((s[i] == ')') && (*(head->tail->par_content) == '('))
-				free_tail_node(head);
-			else { 
+			} else { 
 				ret = false;
 				goto free_nodes;
 			}
